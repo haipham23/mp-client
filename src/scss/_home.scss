@@ -1,0 +1,16 @@
+.home {
+  height: 100vh;
+
+  &__song-list {
+    height: calc(100vh - 60px);
+    overflow-y: scroll;
+  }
+
+  &__song-control {
+    height: 60px;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    overflow: hidden;
+  }
+}
