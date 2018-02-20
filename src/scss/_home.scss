@@ -1,8 +1,17 @@
 .home {
   height: 100vh;
+  max-width: 420px;
+  border-left: 1px solid rgba(10,10,10,.1);
+  border-right: 1px solid rgba(10,10,10,.1);
+
+  &__news {
+    height: 24px;
+    text-align: center;
+    border-bottom: 1px solid rgba(10,10,10,.1);
+  }
 
   &__song-list {
-    height: calc(100vh - 60px);
+    height: calc(100vh - 84px);
     overflow-y: scroll;
   }
 

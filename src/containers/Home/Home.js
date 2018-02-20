@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
-// import classnames from 'classnames';
+import Proptypes from 'prop-types';
 import { connect } from 'react-redux';
-import { compose } from 'recompose';
+import { bindActionCreators } from 'redux';
 import Sound from 'react-sound';
 
-import Model from './HomeModel';
+import HomeNews from '../../components/HomeNews/HomeNews';
+import HomePlaylist from '../../components/HomePlaylist/HomePlaylist';
+import HomeControl from '../../components/HomeControl/HomeControl';
+
+import socketService from '../../services/socket.service';
+
+import { loadPlaylist } from '../../actions/musicActions';
 
 const status = {
   STOPPED: 'STOPPED',
@@ -17,9 +23,10 @@ class Home extends Component {
     super(props);
 
     this.state = {
-      current: 0,
+      current: -1,
       selectedSong: '',
-      playStatus: status.STOPPED
+      playStatus: status.STOPPED,
+      news: ''
     };
 
     this.play = this.play.bind(this);
@@ -29,29 +36,19 @@ class Home extends Component {
     this.playFirst = this.playFirst.bind(this);
     this.playNext = this.playNext.bind(this);
     this.playPrev = this.playPrev.bind(this);
+    this.subcribeToNews = this.subcribeToNews.bind(this);
   }
 
   componentDidMount() {
     this.props.loadPlaylist();
+    this.subcribeToNews();
   }
 
-  play(songUrl, index) {
-    this.setState({
-      current: index,
-      selectedSong: songUrl,
-      playStatus: status.PLAYING
-    });
-  }
+  subcribeToNews() {
+    const newsChannel = socketService.subscribe('news');
 
-  pause() {
-    this.setState({
-      playStatus: status.PAUSED
-    });
-  }
-
-  resume() {
-    this.setState({
-      playStatus: status.PLAYING
+    newsChannel.watch((response) => {
+      this.setState({ news: response.news });
     });
   }
 
@@ -65,6 +62,22 @@ class Home extends Component {
         playStatus: status.PLAYING
       });
     }
+  }
+
+  play(index) {
+    this.playSongByIndex(index);
+  }
+
+  pause() {
+    this.setState({
+      playStatus: status.PAUSED
+    });
+  }
+
+  resume() {
+    this.setState({
+      playStatus: status.PLAYING
+    });
   }
 
   playFirst() {
@@ -84,118 +97,58 @@ class Home extends Component {
   }
 
   render() {
+    const { music } = this.props;
+    const hasSongs = music && music.songs && music.songs.length > 0;
+
     return (
       <div className="container home">
-        <div className="home__song-list">
-          <ul>
-            {
-              this.props.music && this.props.music.songs &&
-              this.props.music.songs.map((s, idx) => (
-                <div key={`song__${idx}`} className="card">
-                  <div className="card-content">
-                    <div className="media">
-                      <div className="media-left">
-                        <div className="image is-48x48">
-                          <img src={s.cover.value.main.url} alt={s.name.value} />
-                        </div>
-                      </div>
-                      <div className="media-content">
-                        <p className="title is-4">{s.name.value}</p>
-                        <p className="subtitle is-6">@{s.artist.value}</p>
-                      </div>
-                      <div className="media-name">
-                        {
-                          this.state.selectedSong !== s.songurl.value.file.url &&
-                          this.state.playStatus !== status.PAUSED &&
-                          <button
-                            className="button is-rounded"
-                            onClick={() => this.play(s.songurl.value.file.url, idx)}
-                          >
-                            <i className="fas fa-play" />
-                          </button>
-                        }
-                        {
-                          this.state.selectedSong !== s.songurl.value.file.url &&
-                          this.state.playStatus === status.PAUSED &&
-                          <button
-                            className="button is-rounded"
-                            onClick={this.resume}
-                          >
-                            <i className="fas fa-play" />
-                          </button>
-                        }
-                        {
-                          this.state.selectedSong === s.songurl.value.file.url &&
-                          <button
-                            className="button is-rounded"
-                            onClick={this.pause}
-                          >
-                            <i className="fas fa-pause" />
-                          </button>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            }
-            {
-              !this.props.music &&
-              <li>Library empty...</li>
-            }
-          </ul>
-        </div>
+        <HomeNews news={this.state.news} />
+        <HomePlaylist
+          music={music}
+          isDisplay={hasSongs}
+          play={this.play}
+          pause={this.pause}
+          resume={this.resume}
+          status={status}
+          current={this.state.current}
+          playStatus={this.state.playStatus}
+        />
         <Sound
           url={this.state.selectedSong}
           playStatus={this.state.playStatus}
         />
-
-        <div className="home__song-control">
-          <div className="card">
-            <div className="card-footer">
-              <div className="card-footer-item">
-                <button className="button is-rounded" onClick={this.playPrev}>
-                  <i className="fas fa-step-backward" />
-                </button>
-              </div>
-              <div className="card-footer-item">
-                {
-                  this.state.playStatus === status.PAUSED &&
-                  <button className="button is-rounded" onClick={this.resume}>
-                    <i className="fas fa-play" />
-                  </button>
-                }
-                {
-                  this.state.playStatus === status.PLAYING &&
-                  <button className="button is-rounded" onClick={this.pause}>
-                    <i className="fas fa-pause" />
-                  </button>
-                }
-                {
-                  this.state.playStatus === status.STOPPED &&
-                  <button className="button is-rounded" onClick={this.playFirst}>\
-                    <i className="fas fa-play" />
-                  </button>
-                }
-              </div>
-              <div className="card-footer-item">
-                <button className="button is-rounded" onClick={this.playNext}>
-                  <i className="fas fa-step-forward" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <HomeControl
+          playPrev={this.playPrev}
+          resume={this.resume}
+          pause={this.pause}
+          playFirst={this.playFirst}
+          playNext={this.playNext}
+          status={status}
+          playStatus={this.state.playStatus}
+        />
       </div>
     );
   }
 }
 
-Home.propTypes = Model.propTypes;
+Home.propTypes = {
+  loadPlaylist: Proptypes.func.isRequired,
+  music: Proptypes.shape({
+    songs: Proptypes.array,
+    isLoading: Proptypes.bool,
+    hasError: Proptypes.bool
+  }).isRequired
+};
 
-export default compose(
-  connect(
-    Model.mapStateToProps,
-    Model.mapDispatchToProps
-  )
+const mapStateToProps = state => ({
+  music: state.music
+});
+
+const mapDispatchToProps = dispatch => ({
+  loadPlaylist: bindActionCreators(loadPlaylist, dispatch)
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
 )(Home);
