@@ -13,6 +13,7 @@
   &__song-list {
     height: calc(100vh - 84px);
     overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
 
     .media-content {
       overflow: hidden;
