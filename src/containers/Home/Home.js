@@ -45,9 +45,7 @@ class Home extends Component {
   }
 
   subcribeToNews() {
-    const newsChannel = socketService.subscribe('news');
-
-    newsChannel.watch((response) => {
+    socketService.on('news', (response) => {
       this.setState({ news: response.news });
     });
   }
