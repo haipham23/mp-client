@@ -25,19 +25,19 @@ class HomeControl extends PureComponent {
             <div className="card-footer-item">
               {
                 playStatus === status.PAUSED &&
-                <button className="button is-rounded" onClick={resume}>
+                <button className="button is-rounded is-info" onClick={resume}>
                   <i className="fas fa-play" />
                 </button>
               }
               {
                 playStatus === status.PLAYING &&
-                <button className="button is-rounded" onClick={pause}>
+                <button className="button is-rounded is-info" onClick={pause}>
                   <i className="fas fa-pause" />
                 </button>
               }
               {
                 playStatus === status.STOPPED &&
-                <button className="button is-rounded" onClick={playFirst}>\
+                <button className="button is-rounded is-info" onClick={playFirst}>
                   <i className="fas fa-play" />
                 </button>
               }
