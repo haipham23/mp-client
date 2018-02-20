@@ -43,16 +43,15 @@
     "start-js": "react-scripts start",
     "start-dev": "npm-run-all -p watch-css start-js",
     "start": "node server.js",
-    "heroku-postbuild": "npm run build",
-    "clear-build": "rm -rf build-dev && rm -rf build-prod",
-    "build-dev": "REACT_APP_BUILD_ENV=development && react-scripts build && mv build build-dev",
-    "build-prod": "REACT_APP_BUILD_ENV=production && react-scripts build && mv build build-prod",
-    "build": "npm run build-css && npm run clear-build && npm run build-dev && npm run build-prod",
+    "clear-build": "rm -rf build",
+    "build": "npm run build-css && npm run clear-build && react-scripts build",
     "build-css": "node-sass-chokidar src/scss/index.scss -o src/css/",
     "watch-css": "node-sass-chokidar src/scss/ -o src/css/ --watch --recursive",
     "lint": "eslint ./src/**/*.js",
     "test": "cross-env NODE_ENV=test CI=true react-scripts test --env=jsdom",
-    "cover": "npm test -- --coverage"
+    "cover": "npm test -- --coverage",
+    "build:docker": "docker build -t registry.ongtu.com/mp-client:latest .",
+    "push:docker": "docker push registry.ongtu.com/mp-client:latest"
   },
   "devDependencies": {
     "chai": "4.1.2",

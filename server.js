@@ -10,10 +10,6 @@ const app = express();
 app.use(helmet());
 app.use(compression());
 
-const build = process.env.NODE_ENV === 'production'
-  ? 'build-prod'
-  : 'build-dev';
-
-app.use(express.static(path.join(__dirname, build)));
+app.use(express.static(path.join(__dirname, 'build')));
 
 app.listen(port);
